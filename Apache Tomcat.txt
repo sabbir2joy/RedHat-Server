@@ -1,0 +1,102 @@
+Apache Tomcat
+https://computingforgeeks.com/install-apache-tomcat-9-on-linux-rhel-centos/
+
+#yum install -y java
+
+#groupadd --system tomcat
+#useradd -d /usr/share/tomcat -r -s /bin/false -g tomcat tomcat
+#yum install -y wget
+
+#export VER="9.0.64"
+#echo $VER
+
+Download apache tomcat file tar.gz file with wget
+
+#tar xvf apache-tomcat-${VER}.tar.gz -C /ur/share/
+
+#ln -s /usr/share/apache-tomcat-$VER/ /usr/share/tomcat
+#chown -R tomcat:tomcat /usr/share/tomcat
+#chown -R tomcat:tomcat /usr/share/apache-tomcat-$VER/
+
+#vim /etc/systemd/system/tomcat.service
+
+[Unit]
+Description=Tomcat - instance %i
+After=syslog.target network.target
+
+[Service]
+Type=forking
+
+User=tomcat
+Group=tomcat
+
+WorkingDirectory=/var/tomcat/%i
+
+Environment="JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/"
+Environment="JAVA_OPTS=-Djava.security.egd=file:///dev/urandom"
+
+Environment="CATALINA_PID=/var/tomcat/%i/run/tomcat.pid"
+Environment="CATALINA_BASE=/var/tomcat/%i/"
+Environment="CATALINA_HOME=/opt/tomcat/"
+Environment="CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC"
+
+ExecStart=/opt/tomcat/bin/startup.sh
+ExecStop=/opt/tomcat/bin/shutdown.sh
+
+#RestartSec=10
+#Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+#systemctl daemon-reload
+#systemctl restart tomcat
+#systemctl enable tomcat
+#systemctl status tomcat
+
+#firewall-cmd --permanent --add-port=8080/tcp
+#firewall-cmd --reload
+
+#vim /usr/share/tomcat/conf/tomcat-users.xml
+ <role rolename="admin-gui" />
+ <role rolename="manager-gui" />
+ <role username="admin" password="StrongPassword" fullName=="Administrator" roles="admin-gui,manager-gui" />
+</tomcat-users>
+
+#yum install -y httpd
+#vim /etc/httpd/conf.d/tomcat_manager.conf
+
+<VirtualHost *:80>
+    ServerAdmin root@localhost
+    ServerName tomcat.example.com
+    DefaultType text/html
+    ProxyRequests off
+    ProxyPreserveHost On
+    ProxyPass / http://localhost:8080/
+    ProxyPassReverse / http://localhost:8080/
+</VirtualHost>
+
+<VirtualHost *:80>
+  ServerName example.com
+
+  ProxyRequests Off
+  ProxyPass / ajp://localhost:8009/
+  ProxyPassReverse / ajp://localhost:8009/
+</VirtualHost>
+
+#sudo setsebool -P httpd_can_network_connect 1
+#sudo setsebool -P httpd_can_network_relay 1
+#sudo setsebool -P httpd_graceful_shutdown 1
+#sudo setsebool -P nis_enabled 1
+
+#sudo systemctl restart httpd && sudo systemctl enable httpd
+
+For Access from another machine with same network
+#vim /usr/share/apache-tomcat-9.0.64/webapps/manager/META-INF/context.xml
+allow="127\.\d+\.\d+\.\d+| :: 1|0:0:0:0:0:0:1 | .*"
+
+For Access host manager from another machine with same network
+#vim /usr/share/apache-tomcat-9.0.64/webapps/host-manager/META-INF/context.xml
+allow="127\.\d+\.\d+\.\d+| :: 1|0:0:0:0:0:0:1 | .*"
+
+#systemctl restart tomcat.service
