@@ -1,0 +1,44 @@
+Web Server Apache
+
+Package
+#yum install httpd
+
+Config location
+/etc/httpd/conf/httpd.conf
+/var/www/html/index.html
+
+Logs:
+log var/log/httpd
+
+Allow from firewall
+
+I S E T
+systemctl enable httpd
+systemctl restart httpd
+
+Firewalld
+firewall-cmd/firewalld
+firewall-cmd --list-all
+firewall-cmd --permanent --add-service=http
+firewall-cmd --reload
+
+ ## Frist you check the service is running or not, # systemctl status httpd
+	or you can restart the service.
+	then it's show [ journalctl -xe ]
+# journalctl -xe 	you can check the log.
+# semanage port -l|grep http
+	Check the port is here or not.
+# man semanage port		for manual to see the example & simply copy the example & change the port no:
+
+     # semanage port -a -t http_port_t -p tcp 2658  
+
+# curl http://172.25.250.10:2658		first check it servera or nodea 
+# Then check it from serverb or nodeb if you can't found the page then check firewall.       		
+     # firewall-cmd --list-all
+	
+     # firewall-cmd --permanent --add-service=http
+     # firewall-cmd --permanent --add-port=2658/tcp
+     # firewall-cmd --reload
+ 			     # systemctl restart httpd
+
+# curl http://172.25.250.10:2658
